@@ -1,0 +1,14 @@
+name: Bug report
+description: Something is broken
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Board, OS, Python version and the output of systemctl --user status slime
