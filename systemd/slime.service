@@ -1,0 +1,13 @@
+[Unit]
+Description=Slime that lives in this Pi
+
+[Service]
+ExecStart=/usr/bin/python3 @DIR@/slime.py run
+Restart=on-failure
+RestartSec=10
+Nice=19
+CPUQuota=10%
+MemoryMax=64M
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,160 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>slime</title>
+<style>
+  html,body{margin:0;min-height:100%;background:#14161c;color:#cfd3dc;font:15px system-ui,sans-serif}
+  body{display:flex;flex-direction:column;align-items:center;gap:10px;padding:16px;box-sizing:border-box;min-height:100vh}
+  canvas{width:min(96vw,640px);height:auto;border-radius:16px;background:#1b1e27;touch-action:manipulation}
+  #meta{opacity:.6;font-size:13px;text-align:center}
+  #diary{width:min(96vw,640px);font-size:13px;opacity:.75;line-height:1.6}
+  #diary b{color:#8fa0d6;font-weight:500;margin-right:6px}
+  body.over canvas{outline:3px dashed #8fd68f}
+  #hint{opacity:.4;font-size:12px}
+  #go{background:#2a3050;color:#cfd3dc;border:0;border-radius:10px;padding:8px 14px;font:inherit;cursor:pointer}
+  #go:disabled{opacity:.5;cursor:default}
+  #report{width:min(96vw,640px);background:#1b1e27;border-radius:12px;padding:10px 14px;font-size:13px;line-height:1.6;box-sizing:border-box}
+  #report:empty{display:none} #report h3{margin:0 0 4px;font-size:14px;color:#9fb4ff;font-weight:500}
+</style>
+<canvas id="c" width="640" height="420"></canvas>
+<div id="meta">...</div>
+<button id="go"></button>
+<div id="report"></div>
+<div id="hint"></div>
+<div id="diary"></div>
+<script>
+const c = document.getElementById('c'), g = c.getContext('2d'), W = 640, H = 420;
+let s = {mood: 'chill', hue: 140, stage: 'baby', bubble: '', trait: '', food: {n: 0}, diary: [], ui: {}};
+let lastAte = 0;
+let x = W / 2, tx = W / 2, hop = 0, mouse = {x: W / 2, y: H / 2}, blinkAt = 0, squish = 0, ateAt = 0;
+
+const q = new URLSearchParams(location.search), DEMO = q.has('demo');
+const fmt = (str, ...a) => str.replace(/\{(\d+)\}/g, (_, i) => a[i]);
+const hhmm = ts => { const t = new Date(ts * 1000); return `${t.getMonth() + 1}/${t.getDate()} ${String(t.getHours()).padStart(2, '0')}:${String(t.getMinutes()).padStart(2, '0')}`; };
+const esc = v => String(v).replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function render() {
+  const u = s.ui || {};
+  meta.textContent = u.meta ? fmt(u.meta, s.trait_name, s.stage_name, s.age_days, s.food.n, s.temp, s.load) : '';
+  hint.textContent = u.hint || '';
+  go.textContent = s.exploring ? u.exploring : u.explore_btn; go.disabled = !!s.exploring;
+  document.documentElement.lang = s.lang || 'en';
+  report.innerHTML = s.report
+    ? `<h3>${esc(s.report.title)} · ${hhmm(s.report.t)}</h3>` + s.report.lines.map(l => `<div>${esc(l)}</div>`).join('')
+    : (u.no_report ? `<div style="opacity:.6">${esc(u.no_report)}</div>` : '');
+  diary.innerHTML = (s.diary || []).map(d => `<div><b>${hhmm(d.t)}</b>${esc(d.text)}</div>`).join('');
+}
+async function poll() {
+  if (DEMO || document.hidden) return;   // a hidden tab costs the Pi nothing
+  try { s = await (await fetch('/state')).json(); } catch (e) { s.mood = 'sleeping'; }  // server gone: keep its last words on screen
+  if (s.ate && s.ate !== lastAte) { lastAte = s.ate; ateAt = performance.now(); }
+  render();
+}
+go.onclick = async () => { s.exploring = true; render(); await fetch('/explore', {method: 'POST'}); setTimeout(poll, 4000); setTimeout(poll, 12000); };
+document.addEventListener('visibilitychange', poll);
+
+// ?demo[=zh-TW]: scripted tour for screenshots and the README GIF; reads ../locales/<lang>.json
+async function demo() {
+  const lang = q.get('demo') || 'en';
+  const L = await (await fetch(`/locales/${lang}.json`)).json();
+  const now = Date.now() / 1000;
+  const base = {hue: 140, stage: 'kid', stage_name: L.stage.kid, trait: 'newborn', trait_name: L.trait.newborn, age_days: 3.2, food: {n: 4},
+    temp: 47.8, load: 0.12, lang, ui: L.ui, exploring: false, diary: [
+      {t: now - 60, text: fmt(L.ev.ate, 'notes.py', L.taste['.py'])}, {t: now - 900, text: fmt(L.report.diary, 4, 1)}],
+    report: {t: now - 120, title: L.report.title, lines: [fmt(L.report.summary, 4, 1), fmt(L.report.gate, '192.168.0.1'),
+      `${L.report.kind.gate}: router (192.168.0.1)`, `${L.report.kind.ssh}: raspberrypi (192.168.0.20)`,
+      `${L.report.kind.web}: nas (192.168.0.50) [${L.report.new_tag}]`, fmt(L.report.story_new, 'nas')]}};
+  const steps = [
+    {mood: 'chill', say: L.idle[0]}, {mood: 'happy', say: L.say.happy, stage: 'kid'},
+    {mood: 'happy', say: fmt(L.ev.nom, L.taste['.py']), ate: 1, trait: 'snakey', hue: 120, food: {n: 5}},
+    {mood: 'panting', say: L.say.panting, load: 2.4}, {mood: 'hot', say: L.say.hot, temp: 71.2},
+    {mood: 'sleeping', say: L.say.sleeping}, {mood: 'dazed', say: L.say.dazed},
+    {mood: 'sulking', say: L.say.sulking}, {mood: 'happy', say: L.ev.greet_back, stage: 'adult'},
+  ];
+  let i = 0;
+  const step = () => {
+    const d = steps[i++ % steps.length];
+    s = Object.assign({}, base, d, {bubble: d.say});
+    s.trait_name = L.trait[s.trait]; s.stage_name = L.stage[s.stage];
+    if (d.ate) ateAt = performance.now();
+    render();
+  };
+  step(); setInterval(step, 2600);
+}
+if (DEMO) demo();
+poll(); setInterval(poll, 4000);
+
+c.addEventListener('pointermove', e => { const r = c.getBoundingClientRect(); mouse = {x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height}; });
+c.addEventListener('click', () => { squish = 1; if (!DEMO) fetch('/poke', {method: 'POST'}); });
+for (const ev of ['dragenter', 'dragover']) addEventListener(ev, e => { e.preventDefault(); document.body.classList.add('over'); });
+for (const ev of ['dragleave', 'drop']) addEventListener(ev, e => { e.preventDefault(); document.body.classList.remove('over'); });
+addEventListener('drop', async e => {
+  for (const f of e.dataTransfer.files)
+    await fetch('/feed', {method: 'POST', headers: {'X-Name': encodeURIComponent(f.name)}, body: f.size <= 5242880 ? f : new Blob()});
+  poll();
+});
+
+function eye(ex, ey, r, kind, t, look) {
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(ex, ey, r, 0, 7); g.fill();
+  g.strokeStyle = g.fillStyle = '#1b1d24'; g.lineWidth = 3;
+  if (kind === 'closed') { g.beginPath(); g.moveTo(ex - r, ey); g.quadraticCurveTo(ex, ey + r * .6, ex + r, ey); g.stroke(); }
+  else if (kind === 'x') { g.beginPath(); g.moveTo(ex - r * .6, ey - r * .6); g.lineTo(ex + r * .6, ey + r * .6); g.moveTo(ex + r * .6, ey - r * .6); g.lineTo(ex - r * .6, ey + r * .6); g.stroke(); }
+  else if (kind === 'spiral') { g.beginPath(); for (let a = 0; a < 12; a += .3) g.lineTo(ex + Math.cos(a + t * 4) * a * 1.4, ey + Math.sin(a + t * 4) * a * 1.4); g.stroke(); }
+  else if (kind === 'happy') { g.beginPath(); g.arc(ex, ey + r * .3, r * .6, Math.PI, 0); g.stroke(); }
+  else { g.beginPath(); g.arc(ex + look.x * r * .45, ey + look.y * r * .45, kind === 'wide' ? r * .55 : r * .4, 0, 7); g.fill(); }
+}
+
+function bubble(text, bx, by) {
+  g.font = '15px system-ui'; const w = Math.min(g.measureText(text).width + 24, 360);
+  const px = Math.max(8, Math.min(W - w - 8, bx - w / 2)), py = by - 40;
+  g.fillStyle = '#f3f4f8'; g.beginPath(); g.roundRect(px, py, w, 30, 12); g.fill();
+  g.beginPath(); g.moveTo(bx - 7, py + 29); g.lineTo(bx, py + 40); g.lineTo(bx + 7, py + 29); g.fill();
+  g.fillStyle = '#1b1d24'; g.textAlign = 'center'; g.fillText(text.length > 44 ? text.slice(0, 43) + '…' : text, px + w / 2, py + 20); g.textAlign = 'left';
+}
+
+function draw(ms) {
+  const t = ms / 1000, m = s.mood;
+  g.clearRect(0, 0, W, H);
+  g.fillStyle = '#232734'; g.fillRect(0, 335, W, 85);
+  const sz = {baby: .8, kid: 1.0, adult: 1.25, elder: 1.4}[s.stage] || 1;
+  const moving = m !== 'sleeping' && m !== 'sulking';
+  if (moving && Math.abs(tx - x) < 4 && Math.random() < (DEMO ? .02 : .004)) tx = 90 + Math.random() * (W - 180);
+  if (moving && Math.abs(tx - x) > 4) { x += Math.sign(tx - x) * (m === 'panting' ? 2.4 : 1); hop = Math.abs(Math.sin(t * 6)) * 14; } else hop *= .9;
+  const speed = {sleeping: .8, panting: 7, hot: 1.5, dazed: 1.2, happy: 3, chill: 2, sulking: .6}[m] || 2;
+  const b = Math.sin(t * speed);
+  squish *= .92; const eating = (ms - ateAt) < 1200 ? Math.sin((ms - ateAt) / 90) * .12 : 0;
+  const w = 95 * sz * (1 + b * (m === 'panting' ? .07 : .04) + squish * .25 + eating), h = 70 * sz * (1 - b * (m === 'panting' ? .1 : .06) - squish * .3 - eating);
+  const cx = x + (m === 'dazed' ? Math.sin(t * 1.3) * 18 : 0), by = 360 - hop;
+  const hue = m === 'hot' ? 8 : s.hue, light = m === 'sleeping' ? 42 : 55;
+  g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(cx, 364, w * (1 - hop / 80), 10, 0, 0, 7); g.fill();
+  g.fillStyle = `hsl(${hue} ${m === 'hot' ? 85 : 65}% ${light}%)`;
+  g.beginPath(); g.moveTo(cx - w, by); g.bezierCurveTo(cx - w * 1.05, by - h * 1.5, cx + w * 1.05, by - h * 1.5, cx + w, by); g.quadraticCurveTo(cx, by + 12, cx - w, by); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.3)'; g.beginPath(); g.ellipse(cx - w * .45, by - h * 1.05, w * .17, h * .13, -.5, 0, 7); g.fill();
+  const top = by - h * 1.12;  // decorations by stage
+  g.strokeStyle = g.fillStyle = '#5fcf6a'; g.lineWidth = 4;
+  if (s.stage === 'kid') { g.beginPath(); g.moveTo(cx, top); g.quadraticCurveTo(cx + 4, top - 16, cx + 12, top - 20); g.stroke(); g.beginPath(); g.ellipse(cx + 14, top - 20, 8, 5, -.4, 0, 7); g.fill(); }
+  if (s.stage === 'adult' || s.stage === 'elder') { g.strokeStyle = '#d9dbe8'; g.beginPath(); g.moveTo(cx, top + 4); g.lineTo(cx, top - 22 * sz / 1.25); g.stroke(); g.fillStyle = `hsl(${(hue + 150) % 360} 80% 65%)`; g.beginPath(); g.arc(cx, top - 24 * sz / 1.25, 7, 0, 7); g.fill(); }
+  if (s.stage === 'elder') { g.fillStyle = '#ffd34d'; g.beginPath(); g.moveTo(cx - 28, top + 2); g.lineTo(cx - 28, top - 16); g.lineTo(cx - 14, top - 6); g.lineTo(cx, top - 20); g.lineTo(cx + 14, top - 6); g.lineTo(cx + 28, top - 16); g.lineTo(cx + 28, top + 2); g.fill(); }
+  const ey = by - h * .78, ex = w * .36, r = 12 * sz + 5;
+  const dx = mouse.x - cx, dy = mouse.y - ey, d = Math.hypot(dx, dy) || 1, look = {x: dx / d, y: dy / d};
+  if (t > blinkAt + .15) blinkAt = t + 2 + Math.random() * 4;
+  const blinking = t > blinkAt - .15 && t < blinkAt && m !== 'sleeping';
+  let kind = {sleeping: 'closed', hot: 'x', panting: 'wide', dazed: 'spiral', happy: 'happy', chill: 'dot', sulking: 'closed'}[m];
+  if (blinking) kind = 'closed';
+  eye(cx - ex, ey, r, kind, t, look); eye(cx + ex, ey, r, kind, t, look);
+  g.strokeStyle = '#1b1d24'; g.lineWidth = 3; g.beginPath();
+  if (eating > 0 || (ms - ateAt) < 1200) { g.ellipse(cx, ey + r * 1.6, 8, 7 + Math.abs(Math.sin((ms - ateAt) / 90)) * 8, 0, 0, 7); g.stroke(); }
+  else if (m === 'panting') { g.ellipse(cx, ey + r * 1.6, 9, 12 + Math.abs(b) * 6, 0, 0, 7); g.stroke(); }
+  else if (m === 'hot') { g.moveTo(cx - 12, ey + r * 1.7); g.bezierCurveTo(cx - 6, ey + r * 1.3, cx + 6, ey + r * 2.1, cx + 12, ey + r * 1.7); g.stroke(); }
+  else if (m === 'sleeping') { g.arc(cx, ey + r * 1.5, 5, 0, 7); g.stroke(); }
+  else if (m === 'sulking') { g.arc(cx, ey + r * 2.2, 12, 1.15 * Math.PI, 1.85 * Math.PI); g.stroke(); }
+  else { g.arc(cx, ey + r * 1.2, 12, .15 * Math.PI, .85 * Math.PI); g.stroke(); }
+  g.font = '22px system-ui';
+  if (m === 'sleeping') for (let i = 0; i < 3; i++) { const p = (t * .4 + i / 3) % 1; g.globalAlpha = 1 - p; g.fillStyle = '#9fb4ff'; g.fillText('z', cx + w * .6 + p * 40, top - p * 50); }
+  if (m === 'hot') for (let i = 0; i < 3; i++) { const p = (t * .7 + i / 3) % 1; g.globalAlpha = 1 - p; g.fillStyle = '#7fd4ff'; g.beginPath(); g.arc(cx - w * .9 + i * 12, by - h * 1.2 + p * 50, 5, 0, 7); g.fill(); }
+  if (m === 'happy') for (let i = 0; i < 4; i++) { const p = (t * .5 + i / 4) % 1; g.globalAlpha = 1 - p; g.fillStyle = '#ffe27a'; g.fillText('✦', cx - w + i * w * .65, top - p * 40); }
+  g.globalAlpha = 1;
+  if (s.bubble) bubble(s.bubble, cx, top - 28);
+  requestAnimationFrame(draw);
+}
+requestAnimationFrame(draw);
+</script>

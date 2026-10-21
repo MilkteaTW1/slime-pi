@@ -1,0 +1,128 @@
+{
+  "_name": "English",
+  "mood": {
+    "sleeping": "sleeping",
+    "hot": "hot",
+    "panting": "busy",
+    "dazed": "offline",
+    "happy": "happy",
+    "chill": "chilling",
+    "sulking": "sulking"
+  },
+  "say": {
+    "sleeping": "zzz...",
+    "hot": "so warm... melting...",
+    "panting": "busy busy busy!",
+    "dazed": "where did the internet go?",
+    "happy": "nice and cool today.",
+    "chill": "just here.",
+    "sulking": "...you were gone so long."
+  },
+  "idle": [
+    "I counted the LEDs. Still two.",
+    "Is the fan a friend?",
+    "I had a dream about being a puddle.",
+    "Something went *tick* inside the wall.",
+    "I stared at a packet for a while.",
+    "I think my left side is bigger.",
+    "Hiccup.",
+    "I rolled to the corner and back.",
+    "Somewhere a router blinked at me.",
+    "I practiced being round.",
+    "I am 90% water. Probably."
+  ],
+  "poke": [
+    "hey!",
+    "stop that, it tickles!",
+    "boop received.",
+    "*squeak*"
+  ],
+  "taste": {
+    "default": "something I've never tasted",
+    ".py": "crunchy, a bit snaky",
+    ".js": "bitter but lively",
+    ".txt": "plain rice cake",
+    ".pdf": "dry paper, needs water",
+    ".jpg": "colourful, tastes like sunsets",
+    ".png": "colourful, tastes like sunsets",
+    ".mp3": "I can taste a beat",
+    ".mp4": "chewy, many frames",
+    ".zip": "so dense, I need a nap",
+    ".xlsx": "so many tiny boxes",
+    ".docx": "chewy and well-formatted",
+    ".exe": "spicy! windows flavour"
+  },
+  "trait": {
+    "newborn": "newborn",
+    "sleepy": "sleepy",
+    "hothead": "hothead",
+    "hustler": "hustler",
+    "lonely": "lonely",
+    "sunny": "sunny",
+    "easygoing": "easygoing",
+    "clingy": "clingy",
+    "snakey": "snakey",
+    "jittery": "jittery",
+    "scholarly": "scholarly",
+    "dreamy": "dreamy",
+    "musical": "musical",
+    "dramatic": "dramatic",
+    "stocky": "stocky",
+    "spicy": "spicy",
+    "tidy": "tidy"
+  },
+  "stage": {
+    "baby": "baby",
+    "kid": "kid",
+    "adult": "adult",
+    "elder": "elder"
+  },
+  "ev": {
+    "ate": "Ate {0}: {1}.",
+    "mood": "Mood changed: {0} to {1} ({2}C, load {3}).",
+    "login": "Someone logged in. {0}",
+    "greet_back": "you're back!!",
+    "greet_long": "{0} days! I almost forgot your shape.",
+    "nom": "nom nom... {0}.",
+    "toobig": "too big to swallow!",
+    "explore_go": "off to explore the neighbourhood!",
+    "stopping": "This Pi is running out of {0}. I'm going to sleep so your other programs have room. Wake me later with: systemctl --user start slime",
+    "woke": "I woke up again."
+  },
+  "report": {
+    "title": "Expedition report",
+    "summary": "I met {0} souls on the home network. {1} new.",
+    "gate": "The big gate (router) lives at {0}.",
+    "kind": {
+      "gate": "the big gate",
+      "ssh": "a friend who speaks SSH",
+      "web": "a lighthouse (web server)",
+      "share": "a treasure chest (file sharing)",
+      "stranger": "a mysterious glowing stranger"
+    },
+    "new_tag": "NEW",
+    "story_new": "A newcomer showed up: {0}. I bowed politely.",
+    "story_gone": "{0} wasn't there this time. I hope they're fine.",
+    "story_quiet": "Quiet neighbourhood today. I took a nap in the sun.",
+    "none": "I walked around but found nobody.",
+    "diary": "Went exploring: met {0}, {1} new."
+  },
+  "ui": {
+    "meta": "{0} {1} slime · {2} days · ate {3} files · {4}°C · load {5}",
+    "hint": "drop a file on the slime to feed it · click to poke",
+    "explore_btn": "Send on an expedition",
+    "exploring": "exploring...",
+    "no_report": "No expedition yet. The first one happens on your next login.",
+    "diary_title": "Diary"
+  },
+  "cli": {
+    "not_running": "The slime is not running. Start it with: systemctl --user start slime",
+    "line": "{0} {1} slime, {2} days old | ate {3} files | {4}C load {5}",
+    "stopped": "The slime went to sleep at {0} because the Pi was short of {1}. Wake it with: systemctl --user start slime"
+  },
+  "reason": {
+    "memory": "memory",
+    "cpu": "CPU time",
+    "heat": "cooling room"
+  }
+}

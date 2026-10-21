@@ -1,0 +1,15 @@
+name: Works on my board
+description: Tell us you ran it on a Raspberry Pi model
+labels: [question]
+body:
+  - type: input
+    id: board
+    attributes:
+      label: Board and OS
+      description: For example Raspberry Pi 4 Model B, Raspberry Pi OS Bookworm
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: What worked, what did not
