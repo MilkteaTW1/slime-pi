@@ -19,7 +19,7 @@ It is not a monitor with a face. It is a small creature whose life is tied to th
 
 ## Install
 
-On the Pi (Raspberry Pi OS, Python 3.9+, nothing to `pip install`):
+On the Pi (Raspberry Pi OS, Python 3.11+, nothing to `pip install`):
 
 ```bash
 git clone https://github.com/MilkteaTW1/slime-pi.git

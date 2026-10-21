@@ -19,7 +19,7 @@
 
 ## 安裝
 
-在樹莓派上執行（Raspberry Pi OS、Python 3.9 以上，不需要 `pip install`）：
+在樹莓派上執行（Raspberry Pi OS、Python 3.11 以上，不需要 `pip install`）：
 
 ```bash
 git clone https://github.com/MilkteaTW1/slime-pi.git
