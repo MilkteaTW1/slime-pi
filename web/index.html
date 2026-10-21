@@ -45,7 +45,7 @@ function render() {
 }
 async function poll() {
   if (DEMO || document.hidden) return;   // a hidden tab costs the Pi nothing
-  try { s = await (await fetch('/state')).json(); } catch (e) { s.mood = 'dazed'; }
+  try { s = await (await fetch('/state')).json(); } catch (e) { s.mood = 'sleeping'; }  // server gone: keep its last words on screen
   if (s.ate && s.ate !== lastAte) { lastAte = s.ate; ateAt = performance.now(); }
   render();
 }

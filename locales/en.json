@@ -1,8 +1,13 @@
 {
   "_name": "English",
   "mood": {
-    "sleeping": "sleeping", "hot": "hot", "panting": "busy", "dazed": "offline",
-    "happy": "happy", "chill": "chilling", "sulking": "sulking"
+    "sleeping": "sleeping",
+    "hot": "hot",
+    "panting": "busy",
+    "dazed": "offline",
+    "happy": "happy",
+    "chill": "chilling",
+    "sulking": "sulking"
   },
   "say": {
     "sleeping": "zzz...",
@@ -26,7 +31,12 @@
     "I practiced being round.",
     "I am 90% water. Probably."
   ],
-  "poke": ["hey!", "stop that, it tickles!", "boop received.", "*squeak*"],
+  "poke": [
+    "hey!",
+    "stop that, it tickles!",
+    "boop received.",
+    "*squeak*"
+  ],
   "taste": {
     "default": "something I've never tasted",
     ".py": "crunchy, a bit snaky",
@@ -43,12 +53,30 @@
     ".exe": "spicy! windows flavour"
   },
   "trait": {
-    "newborn": "newborn", "sleepy": "sleepy", "hothead": "hothead", "hustler": "hustler",
-    "lonely": "lonely", "sunny": "sunny", "easygoing": "easygoing", "clingy": "clingy",
-    "snakey": "snakey", "jittery": "jittery", "scholarly": "scholarly", "dreamy": "dreamy",
-    "musical": "musical", "dramatic": "dramatic", "stocky": "stocky", "spicy": "spicy", "tidy": "tidy"
+    "newborn": "newborn",
+    "sleepy": "sleepy",
+    "hothead": "hothead",
+    "hustler": "hustler",
+    "lonely": "lonely",
+    "sunny": "sunny",
+    "easygoing": "easygoing",
+    "clingy": "clingy",
+    "snakey": "snakey",
+    "jittery": "jittery",
+    "scholarly": "scholarly",
+    "dreamy": "dreamy",
+    "musical": "musical",
+    "dramatic": "dramatic",
+    "stocky": "stocky",
+    "spicy": "spicy",
+    "tidy": "tidy"
   },
-  "stage": { "baby": "baby", "kid": "kid", "adult": "adult", "elder": "elder" },
+  "stage": {
+    "baby": "baby",
+    "kid": "kid",
+    "adult": "adult",
+    "elder": "elder"
+  },
   "ev": {
     "ate": "Ate {0}: {1}.",
     "mood": "Mood changed: {0} to {1} ({2}C, load {3}).",
@@ -57,7 +85,9 @@
     "greet_long": "{0} days! I almost forgot your shape.",
     "nom": "nom nom... {0}.",
     "toobig": "too big to swallow!",
-    "explore_go": "off to explore the neighbourhood!"
+    "explore_go": "off to explore the neighbourhood!",
+    "stopping": "This Pi is running out of {0}. I'm going to sleep so your other programs have room. Wake me later with: systemctl --user start slime",
+    "woke": "I woke up again."
   },
   "report": {
     "title": "Expedition report",
@@ -87,6 +117,12 @@
   },
   "cli": {
     "not_running": "The slime is not running. Start it with: systemctl --user start slime",
-    "line": "{0} {1} slime, {2} days old | ate {3} files | {4}C load {5}"
+    "line": "{0} {1} slime, {2} days old | ate {3} files | {4}C load {5}",
+    "stopped": "The slime went to sleep at {0} because the Pi was short of {1}. Wake it with: systemctl --user start slime"
+  },
+  "reason": {
+    "memory": "memory",
+    "cpu": "CPU time",
+    "heat": "cooling room"
   }
 }

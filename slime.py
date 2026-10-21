@@ -32,6 +32,9 @@ TICK = 30                     # seconds between samples
 SAVE_EVERY = 10               # ticks between disk writes (5 minutes)
 MAX_FOOD = 5 * 1024 * 1024
 EXPLORE_COOLDOWN = 600
+STOPPED = os.path.join(HOME, "stopped.json")
+STOP_AFTER = 3                # critical ticks in a row (about 90 s) before it leaves
+GOODBYE_SECS = 30             # how long users get to read the goodbye
 STAGES = [(0, "baby"), (20, "kid"), (100, "adult"), (400, "elder")]
 TRAIT_BY_EXT = {".py": "snakey", ".js": "jittery", ".pdf": "scholarly", ".jpg": "dreamy",
                 ".png": "dreamy", ".mp3": "musical", ".mp4": "dramatic", ".zip": "stocky",
@@ -173,6 +176,25 @@ def decide(temp, load, hour, net, memfree, absent_days):
     return "chill"
 
 
+def pressure(temp, load, memfree, cores, forced=None):
+    """(level, reason). 0 fine, 1 getting tight (stop optional work), 2 critical (leave the Pi alone)."""
+    if forced:
+        return 2, forced
+    if memfree < 0.05:
+        return 2, "memory"
+    if load > cores * 2:
+        return 2, "cpu"
+    if temp >= 80:
+        return 2, "heat"
+    if memfree < 0.10:
+        return 1, "memory"
+    if load > cores * 1.25:
+        return 1, "cpu"
+    if temp >= 75:
+        return 1, "heat"
+    return 0, ""
+
+
 # ---------- exploring the home network ----------
 
 def _out(cmd, timeout=5):
@@ -280,6 +302,8 @@ def render_entry(w, e):
     k, a = e["k"], e["a"]
     if k == "ev.ate":
         return w.tr(k, a[0], w.taste(a[1]))
+    if k == "ev.stopping":
+        return w.tr(k, w.tr("reason." + a[0]))
     if k == "ev.mood":
         return w.tr(k, w.tr("mood." + a[0]), w.tr("mood." + a[1]), a[2], a[3])
     if k == "ev.login":
@@ -331,8 +355,8 @@ def run():
 
     def explore():
         with lock:
-            if cur["exploring"] or time.time() - cur["last_explore"] < EXPLORE_COOLDOWN:
-                return
+            if cur["exploring"] or time.time() - cur["last_explore"] < EXPLORE_COOLDOWN or cur.get("pressure", 0):
+                return  # busy, cooling down, or the Pi is short of resources
             cur["exploring"] = True
             cur["last_explore"] = time.time()
             say("ev.explore_go", secs=15)
@@ -432,9 +456,26 @@ def run():
             save()
         os._exit(0)
 
+    def goodbye(reason):
+        """Tell the user, then leave so other programs get the room. systemd will not restart a clean exit."""
+        with lock:
+            say("ev.stopping", w.tr("reason." + reason), secs=GOODBYE_SECS + 60)
+            note(st, "ev.stopping", reason)
+            save()
+            text = w.tr("ev.stopping", w.tr("reason." + reason))
+        _safe(lambda: subprocess.run(["wall"], input=f"[slime] {text}", text=True, timeout=5))
+        with open(STOPPED, "w") as f:
+            json.dump({"t": time.time(), "reason": reason}, f)
+        time.sleep(GOODBYE_SECS)  # the web page polls and shows the message meanwhile
+        bye()
+
     signal.signal(signal.SIGTERM, bye)
     threading.Thread(target=ThreadingHTTPServer(("0.0.0.0", PORT), H).serve_forever, daemon=True).start()
 
+    if os.path.exists(STOPPED):
+        os.remove(STOPPED)
+        note(st, "ev.woke")
+    cores, strained = os.cpu_count() or 1, 0
     net, last_net, prev_mood, prev_sess, tick = True, 0, None, sessions(), 0
     while True:
         t = time.time()
@@ -465,11 +506,15 @@ def run():
                 i = random.randrange(len(w.tr("idle")))
                 cur["bubble"], cur["bubble_until"] = ("idle_i", (i,)), t + 20
                 note(st, "idle", i)
-            cur.update(mood=mood, temp=round(temp, 1), load=round(load, 2))
+            level, why = pressure(temp, load, mem_free(), cores, os.environ.get("SLIME_FORCE_PRESSURE"))
+            strained = strained + 1 if level == 2 else 0
+            cur.update(mood=mood, temp=round(temp, 1), load=round(load, 2), pressure=level)
             tick += 1
             if tick % SAVE_EVERY == 0 or went_in:
                 save()
             last_report = time.strftime("%Y-%m-%d", time.localtime(st["report"]["t"])) if st["report"] else ""
+        if strained >= STOP_AFTER:
+            goodbye(why)
         if went_in and last_report != today:  # first login of the day: go exploring
             threading.Thread(target=explore, daemon=True).start()
         time.sleep(TICK)
@@ -483,7 +528,13 @@ def look():
             s = json.load(r)
     except OSError:
         w.set(system_locale())
-        sys.exit(w.tr("cli.not_running"))
+        try:
+            with open(STOPPED) as f:
+                info = json.load(f)
+            sys.exit(w.tr("cli.stopped", time.strftime("%m/%d %H:%M", time.localtime(info["t"])),
+                          w.tr("reason." + info["reason"])))
+        except (OSError, ValueError, KeyError):
+            sys.exit(w.tr("cli.not_running"))
     w.set(s["lang"])
     print("\n".join(FACES[s["mood"]]))
     print(f"\n\"{s['bubble']}\"")

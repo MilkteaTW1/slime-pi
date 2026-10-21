@@ -15,6 +15,7 @@ It is not a monitor with a face. It is a small creature whose life is tied to th
 - **It grows.** Baby, kid, adult, elder, with a sprout, an antenna and finally a crown.
 - **It speaks your language.** It reads the Pi's system language when you log in. English and 繁體中文 are built in, and [adding another takes one JSON file](CONTRIBUTING.md#add-a-language).
 - **It is cheap to run.** Wakes every 30 seconds, reads a few files, limited to 10% of one CPU core and 64 MB by systemd.
+- **It steps aside.** Every wake-up it checks memory, CPU load and temperature. When things get tight it stops optional work (no expeditions). If the Pi stays critically short for about 90 seconds (under 5% memory free, load above twice the cores, or 80 °C), it tells you first (speech bubble on the page, a `wall` message to open terminals, a diary entry), waits 30 seconds, then shuts itself down so your other programs get the room. It does not restart by itself; wake it with `systemctl --user start slime`. Run `slime` to see why it slept.
 
 ## Install
 

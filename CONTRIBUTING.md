@@ -39,4 +39,6 @@ python tools/check-lang.py               # locale check
 python tools/make-gif.py en              # re-record docs/demo.en.gif (needs playwright and ffmpeg)
 ```
 
+To test the "step aside" behaviour on a Pi without actually starving it: `SLIME_FORCE_PRESSURE=memory python3 slime.py run` (it announces, waits, and exits).
+
 To see the page without a Pi, open `/?demo=en` from any static server that maps `web/` to `/` and `locales/` to `/locales/`. `tools/make-gif.py` contains a tiny one.

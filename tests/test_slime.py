@@ -44,6 +44,25 @@ class Mood(unittest.TestCase):
         self.assertEqual(d(55, .4, 12, True, .5, 0), "chill")
 
 
+class Pressure(unittest.TestCase):
+    def test_levels(self):
+        p = slime.pressure
+        self.assertEqual(p(50, .2, .5, 4), (0, ""))
+        self.assertEqual(p(50, .2, .08, 4), (1, "memory"))
+        self.assertEqual(p(50, 6, .5, 4), (1, "cpu"))
+        self.assertEqual(p(50, .2, .03, 4), (2, "memory"))
+        self.assertEqual(p(50, 9, .5, 4), (2, "cpu"))
+        self.assertEqual(p(81, .2, .5, 4), (2, "heat"))
+        self.assertEqual(p(50, .2, .5, 4, forced="memory"), (2, "memory"))
+
+    def test_goodbye_text_exists_in_every_language(self):
+        w = slime.Words()
+        for tag in w.all:
+            w.set(tag)
+            for r in ("memory", "cpu", "heat"):
+                self.assertIn(w.tr("reason." + r), w.tr("ev.stopping", w.tr("reason." + r)))
+
+
 class Growth(unittest.TestCase):
     def state(self, **kw):
         st = {"secs": 0, "food": {"n": 0, "ext": {}, "bytes": 0}, "pokes": 0, "moods": {}}

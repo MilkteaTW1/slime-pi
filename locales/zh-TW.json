@@ -1,8 +1,13 @@
 {
   "_name": "繁體中文",
   "mood": {
-    "sleeping": "睡覺", "hot": "很熱", "panting": "忙碌", "dazed": "斷網",
-    "happy": "開心", "chill": "發呆", "sulking": "鬧彆扭"
+    "sleeping": "睡覺",
+    "hot": "很熱",
+    "panting": "忙碌",
+    "dazed": "斷網",
+    "happy": "開心",
+    "chill": "發呆",
+    "sulking": "鬧彆扭"
   },
   "say": {
     "sleeping": "呼嚕嚕...",
@@ -26,7 +31,12 @@
     "我在練習變圓。",
     "我有九成是水，大概吧。"
   ],
-  "poke": ["喂！", "別戳了，好癢！", "收到一個 boop。", "*吱*"],
+  "poke": [
+    "喂！",
+    "別戳了，好癢！",
+    "收到一個 boop。",
+    "*吱*"
+  ],
   "taste": {
     "default": "沒吃過的味道",
     ".py": "脆脆的，有點像蛇",
@@ -43,12 +53,30 @@
     ".exe": "辣！是 Windows 的味道"
   },
   "trait": {
-    "newborn": "新生", "sleepy": "瞌睡", "hothead": "火爆", "hustler": "拚命",
-    "lonely": "孤單", "sunny": "陽光", "easygoing": "隨和", "clingy": "愛黏人",
-    "snakey": "蛇味", "jittery": "毛躁", "scholarly": "書卷", "dreamy": "愛作夢",
-    "musical": "音樂", "dramatic": "戲劇", "stocky": "敦實", "spicy": "嗆辣", "tidy": "整齊"
+    "newborn": "新生",
+    "sleepy": "瞌睡",
+    "hothead": "火爆",
+    "hustler": "拚命",
+    "lonely": "孤單",
+    "sunny": "陽光",
+    "easygoing": "隨和",
+    "clingy": "愛黏人",
+    "snakey": "蛇味",
+    "jittery": "毛躁",
+    "scholarly": "書卷",
+    "dreamy": "愛作夢",
+    "musical": "音樂",
+    "dramatic": "戲劇",
+    "stocky": "敦實",
+    "spicy": "嗆辣",
+    "tidy": "整齊"
   },
-  "stage": { "baby": "幼年", "kid": "少年", "adult": "成年", "elder": "長老" },
+  "stage": {
+    "baby": "幼年",
+    "kid": "少年",
+    "adult": "成年",
+    "elder": "長老"
+  },
   "ev": {
     "ate": "吃了 {0}：{1}。",
     "mood": "心情從「{0}」變成「{1}」（{2}°C，負載 {3}）。",
@@ -57,7 +85,9 @@
     "greet_long": "{0} 天了！我差點忘記你的形狀。",
     "nom": "嗯嗯...{0}。",
     "toobig": "太大了，吞不下！",
-    "explore_go": "我要去探索附近囉！"
+    "explore_go": "我要去探索附近囉！",
+    "stopping": "這台 Pi 的{0}快不夠了，我先去睡覺，把空間留給你的其他程式。之後想叫醒我：systemctl --user start slime",
+    "woke": "我又醒來了。"
   },
   "report": {
     "title": "探險報告",
@@ -87,6 +117,12 @@
   },
   "cli": {
     "not_running": "史萊姆沒有在跑。用這個啟動：systemctl --user start slime",
-    "line": "{0}的{1}史萊姆，{2} 天大 | 吃過 {3} 個檔案 | {4}°C 負載 {5}"
+    "line": "{0}的{1}史萊姆，{2} 天大 | 吃過 {3} 個檔案 | {4}°C 負載 {5}",
+    "stopped": "史萊姆在 {0} 去睡覺了，因為 Pi 的{1}不夠。叫醒牠：systemctl --user start slime"
+  },
+  "reason": {
+    "memory": "記憶體",
+    "cpu": "CPU",
+    "heat": "散熱空間"
   }
 }
