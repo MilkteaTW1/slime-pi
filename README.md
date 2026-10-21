@@ -4,6 +4,8 @@ A slime that lives in your Raspberry Pi. Feed it files, say hi over SSH, and rea
 
 **English** | [繁體中文](README.zh-TW.md)
 
+Website: [inkacuity.com/projects/slime-pi](https://inkacuity.com/projects/slime-pi) · 專案介紹頁
+
 ![slime-pi demo](docs/demo.en.gif)
 
 It is not a monitor with a face. It is a small creature whose life is tied to the Pi it lives in:
