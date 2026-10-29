@@ -59,6 +59,10 @@ cd slime-pi
 
 最簡單的方式是翻譯：複製 `locales/en.json`、翻成你的語言、執行 `python tools/check-lang.py`，然後開 PR。新的碎碎念、新的檔案口味、其他機型的測試回報也都很有幫助。詳見 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
+## 需要客製？
+
+想要專屬功能、整合或部署協助？歡迎找我，詳情請見 [墨鋒 Inkacuity](https://inkacuity.com/projects/slime-pi)，或寄信到 [ink@inkacuity.com](mailto:ink@inkacuity.com)。
+
 ## 授權
 
 [MIT](LICENSE)

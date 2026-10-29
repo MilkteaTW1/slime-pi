@@ -61,6 +61,10 @@ The expedition is a gentle ping walk of **your own /24 subnet only** (for exampl
 
 Translations are the easiest way in: copy `locales/en.json`, translate it, run `python tools/check-lang.py`, open a PR. New idle thoughts, new file-type tastes and test reports from other Pi models help too. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Need something custom?
+
+Custom features, integrations or setup help are available. See [墨鋒 Inkacuity](https://inkacuity.com/projects/slime-pi) or email [ink@inkacuity.com](mailto:ink@inkacuity.com).
+
 ## License
 
 [MIT](LICENSE)
