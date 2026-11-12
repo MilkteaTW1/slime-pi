@@ -89,7 +89,7 @@ for (const ev of ['dragenter', 'dragover']) addEventListener(ev, e => { e.preven
 for (const ev of ['dragleave', 'drop']) addEventListener(ev, e => { e.preventDefault(); document.body.classList.remove('over'); });
 addEventListener('drop', async e => {
   for (const f of e.dataTransfer.files)
-    await fetch('/feed', {method: 'POST', headers: {'X-Name': encodeURIComponent(f.name)}, body: f.size <= 5242880 ? f : new Blob()});
+    await fetch('/feed', {method: 'POST', headers: {'X-Name': encodeURIComponent(f.name), 'X-Size': String(f.size)}, body: f.size <= 5242880 ? f : new Blob()});
   poll();
 });
 

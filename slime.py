@@ -141,7 +141,7 @@ def mem_free():
     try:
         m = {k: int(v.split()[0]) for k, v in (l.split(":") for l in rd("/proc/meminfo").splitlines())}
         return m["MemAvailable"] / m["MemTotal"]
-    except (KeyError, ValueError):
+    except (KeyError, ValueError, ZeroDivisionError):
         return 1.0
 
 
@@ -288,7 +288,38 @@ def trait_of(st):
             return TRAIT_BY_EXT[top]
     if st["secs"] < 900 or not st["moods"]:
         return "newborn"
-    return TRAIT_BY_MOOD[max(st["moods"], key=st["moods"].get)]
+    # .get: states saved by older versions may hold mood names that no longer exist
+    return TRAIT_BY_MOOD.get(max(st["moods"], key=st["moods"].get), "easygoing")
+
+
+def idle_line(w, i):
+    """Idle thought number i. Languages may have different numbers of lines, and the
+    diary keeps the index, so wrap around instead of crashing after a language switch."""
+    lines = w.tr("idle")
+    return lines[i % len(lines)] if isinstance(lines, list) and lines else ""
+
+
+def read_length(value):
+    """Content-Length header -> non-negative int (0 when missing or malformed)."""
+    try:
+        return max(0, int(value or 0))
+    except ValueError:
+        return 0
+
+
+def drain(rfile, n, chunk=65536):
+    """Read and drop n bytes. Returns how many arrived; stops early if the client
+    hangs up or stalls past the socket timeout."""
+    got = 0
+    while got < n:
+        try:
+            part = rfile.read(min(chunk, n - got))
+        except OSError:  # includes TimeoutError from the handler's socket timeout
+            break
+        if not part:
+            break
+        got += len(part)
+    return got
 
 
 def note(st, key, *args):
@@ -309,7 +340,7 @@ def render_entry(w, e):
     if k == "ev.login":
         return w.tr(k, w.tr(a[0], *a[1:]))
     if k == "idle":
-        return w.tr("idle")[a[0]]
+        return idle_line(w, a[0])
     return w.tr(k, *a)
 
 
@@ -382,6 +413,8 @@ def run():
             save()
 
     class H(BaseHTTPRequestHandler):
+        timeout = 20  # a stalled client must not pin a handler thread forever
+
         def log_message(self, *a):
             pass
 
@@ -401,15 +434,15 @@ def run():
                     self.reply(f.read(), "text/html; charset=utf-8")
 
         def do_POST(self):
-            n = int(self.headers.get("Content-Length") or 0)
+            n = read_length(self.headers.get("Content-Length"))
             if self.path == "/feed":
-                if n > MAX_FOOD:
+                # the page sends an empty body for big files and the real size in X-Size
+                if max(n, read_length(self.headers.get("X-Size"))) > MAX_FOOD:
                     with lock:
                         say("ev.toobig", secs=10)
                     return self.reply(b'{"ok":false}')
-                left = n  # read and drop the bytes: only name and size matter
-                while left > 0:
-                    left -= len(self.rfile.read(min(65536, left)))
+                if drain(self.rfile, n) < n:  # read and drop the bytes: only name and size matter
+                    return  # client hung up mid-upload; nothing to answer
                 name = unquote(self.headers.get("X-Name", "mystery"))
                 ext = os.path.splitext(name)[1].lower() or "(none)"
                 with lock:
@@ -436,7 +469,7 @@ def run():
             if key == "poke":
                 return random.choice(w.tr("poke"))
             if key == "idle_i":
-                return w.tr("idle")[args[0]]
+                return idle_line(w, args[0])
             return w.tr(key, *args)
         return w.tr("say." + mood)
 
