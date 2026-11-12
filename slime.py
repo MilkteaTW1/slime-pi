@@ -308,10 +308,14 @@ def read_length(value):
 
 
 def drain(rfile, n, chunk=65536):
-    """Read and drop n bytes. Returns how many arrived; stops early if the client hangs up."""
+    """Read and drop n bytes. Returns how many arrived; stops early if the client
+    hangs up or stalls past the socket timeout."""
     got = 0
     while got < n:
-        part = rfile.read(min(chunk, n - got))
+        try:
+            part = rfile.read(min(chunk, n - got))
+        except OSError:  # includes TimeoutError from the handler's socket timeout
+            break
         if not part:
             break
         got += len(part)
@@ -409,6 +413,8 @@ def run():
             save()
 
     class H(BaseHTTPRequestHandler):
+        timeout = 20  # a stalled client must not pin a handler thread forever
+
         def log_message(self, *a):
             pass
 

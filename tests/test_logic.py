@@ -299,6 +299,12 @@ class Upload(unittest.TestCase):
         # bug: the old loop did `left -= len(read())`; a short body made it spin forever at 100% CPU
         self.assertEqual(slime.drain(io.BytesIO(b"x" * 10), 1000), 10)
 
+    def test_drain_stops_on_stalled_client(self):
+        class Stalled:
+            def read(self, n):
+                raise TimeoutError("timed out")
+        self.assertEqual(slime.drain(Stalled(), 1000), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
